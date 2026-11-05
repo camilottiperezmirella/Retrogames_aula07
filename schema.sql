@@ -1,55 +1,19 @@
-CREATE DATABASE IF NOT EXISTS db_retrogames
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
+-- Criar o banco de dados
+CREATE DATABASE IF NOT EXISTS db_retro_games;
+USE db_retro_games;
 
-USE db_retrogames;
-
+-- Criar a tabela de discos
 CREATE TABLE IF NOT EXISTS jogos (
-    id INT NOT NULL AUTO_INCREMENT,
-    titulo VARCHAR(150) NOT NULL,
-    plataforma VARCHAR(80) NOT NULL,
-    desenvolvedora VARCHAR(120) NOT NULL,
-    imagem_url VARCHAR(2048) NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    autor VARCHAR(100) NOT NULL,
+    genero VARCHAR(50) NOT NULL,
+    imagem_url TEXT NOT NULL,
     preco DECIMAL(10, 2) NOT NULL,
-    data_cadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    PRIMARY KEY (id)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO jogos (
-    titulo,
-    plataforma,
-    desenvolvedora,
-    imagem_url,
-    preco
-)
-VALUES
-(
-    'Super Mario World',
-    'Super Nintendo (SNES)',
-    'Nintendo',
-    'https://placehold.co/400x500/201c1a/ffffff?text=Super+Mario+World',
-    149.90
-),
-(
-    'Sonic the Hedgehog 2',
-    'Mega Drive',
-    'Sega',
-    'https://placehold.co/400x500/201c1a/ffffff?text=Sonic+2',
-    119.90
-),
-(
-    'Crash Bandicoot',
-    'PlayStation 1',
-    'Naughty Dog',
-    'https://placehold.co/400x500/201c1a/ffffff?text=Crash+Bandicoot',
-    89.90
-),
-(
-    'The Legend of Zelda: Ocarina of Time',
-    'Nintendo 64',
-    'Nintendo',
-    'https://placehold.co/400x500/201c1a/ffffff?text=Zelda+Ocarina',
-    199.90
-);
-
+INSERT INTO jogos (nome, autor, genero, imagem_url, preco) VALUES
+('Super Mario Bro', 'Alguém aí', 'Aventura', 'https://th.bing.com/th/id/OIP.Uug7qQ7XyaM9Rwdb81P9YwHaEK?w=267&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3', 100.00),
+('Sonic', 'Algum japonês', 'Avetura', 'https://th.bing.com/th/id/OIP.xW5pZGoDGbu8jK1bvRki9AHaEK?w=281&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3', 200.50),
+('Pac-man', 'Alguem', 'Aventura', 'https://img.okezone.com/content/2023/02/20/326/2768266/sejarah-penciptaan-game-legendaris-pac-man-10aXQ8DlD0.jpg', 150.00);

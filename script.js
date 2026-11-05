@@ -1,117 +1,129 @@
+const API_URL = "http://localhost:3000";
 
-const btnCadastrar = document.getElementById("btnCadastrar");
-const btnCancelar = document.getElementById("btnCancelar");
+const btnCadastrar = document.getElementById('btnCadastrar');
+const btnCancelar = document.getElementById('btnCancelar');
+const modal = document.getElementById('modalCadastro');
+const form = document.getElementById('formJogos');
+const lista = document.getElementById('listarJogos');
+const mensagemVazia = document.getElementById('mensagemVazia');
 
-const modalCadastro = document.getElementById("modalCadastro");
-const formJogo = document.getElementById("formJogo");
-
-const listarJogos = document.getElementById("listarJogos");
-const mensagemVazia = document.getElementById("mensagemVazia");
-
+// Abrir modal
 btnCadastrar.addEventListener("click", () => {
-    modalCadastro.showModal();
+    modal.showModal();
 });
 
+// Fechar modal
 btnCancelar.addEventListener("click", () => {
-    modalCadastro.close();
+    modal.close();
 });
 
-modalCadastro.addEventListener("click", (event) => {
-    if (event.target === modalCadastro) {
-        modalCadastro.close();
+
+
+//Carregando as informações do BD(get)
+async function carregarJogos() {
+    try {
+        const resposta = await fetch(API_URL + '/listar');
+        const jogos = await resposta.json();
+
+        lista.innerHTML = "";
+
+        if (jogos.length === 0) {
+            mensagemVazia.hidden = false;
+            lista.appendChild(mensagemVazia);
+            return;
+        }
+
+        mensagemVazia.hidden = true;
+
+        // Renderizar os jogos
+        jogos.forEach(jogo => {
+            criarCard(
+                jogo.nome, jogo.autor, jogo.genero, jogo.imagem_url, jogo.preco)
+        })
+    } catch (erro) {
+        console.error("Erro ao carregar jogos:", erro);
+        alert("Não foi possível conectar ao servidor");
+    }
+}
+
+// Cadastrar jogo
+form.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    const novoJogo = {
+        nome: document.getElementById("nome").value.trim(),
+        autor: document.getElementById("autor").value.trim(),
+        genero: document.getElementById("genero").value.trim(),
+        imagem_url: document.getElementById("imagem").value.trim(),
+        preco: Number(document.getElementById("preco").value)
+    };
+    try {
+        const resposta = await fetch(API_URL + '/cadastrar', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(novoJogo)
+        });
+
+        if (resposta.ok) {
+            form.reset();
+            modal.close();
+            carregarJogos();
+
+        } else {
+            alert("Erro ao cadastrar jogo. Verifique o banco de dados.");
+        }
+
+    } catch (erro) {
+        console.error("Erro na requisição:", erro);
+        alert("Erro de conexão com o servidor");
     }
 });
 
-function formatarPreco(valor) {
-    return Number(valor).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    });
-}
+// Criar card de cada jogo
+function criarCard(nome, autor, genero, imagem, preco) {
 
-function criarCardJogo(jogo) {
     const card = document.createElement("article");
-    card.classList.add("card-jogo");
+    card.classList.add("card-disco");
 
+    // Capa do jogo
     const capa = document.createElement("div");
     capa.classList.add("capa");
 
-    const imagem = document.createElement("img");
-    imagem.src = jogo.imagem_url;
-    imagem.alt = `Capa do jogo ${jogo.titulo}`;
-    imagem.loading = "lazy";
+    const imagemCapa = document.createElement("img");
+    imagemCapa.src = imagem;
+    imagemCapa.alt = "Capa do jogo " + nome;
 
-    imagem.addEventListener("error", () => {
-        imagem.remove();
-        capa.textContent = "🎮 Imagem indisponível";
-    }, { once: true });
+    capa.appendChild(imagemCapa);
 
-    capa.appendChild(imagem);
-
-    const informacoes = document.createElement("div");
-    informacoes.classList.add("info-jogo");
+    // Informações do jogo
+    const info = document.createElement("div");
+    info.classList.add("info-disco");
 
     const titulo = document.createElement("h3");
-    titulo.textContent = jogo.titulo;
+    titulo.textContent = nome;
 
-    const plataforma = document.createElement("p");
-    plataforma.textContent = `Plataforma: ${jogo.plataforma}`;
+    const nomeAutor = document.createElement("p");
+    nomeAutor.textContent = "Autor: " + autor;
 
-    const desenvolvedora = document.createElement("p");
-    desenvolvedora.textContent =
-        `Desenvolvedora: ${jogo.desenvolvedora}`;
+    const nomeGenero = document.createElement("p");
+    nomeGenero.textContent = "Gênero: " + genero;
 
-    const preco = document.createElement("span");
-    preco.classList.add("preco");
-    preco.textContent = formatarPreco(jogo.preco);
+    const valor = document.createElement("strong");
+    valor.classList.add("preco");
 
-    informacoes.append(
-        titulo,
-        plataforma,
-        desenvolvedora,
-        preco
-    );
+    valor.textContent = Number(preco).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
 
-    card.append(capa, informacoes);
+    info.append(titulo, nomeAutor, nomeGenero, valor);
 
-    return card;
+    card.append(capa, info);
+
+    lista.appendChild(card);
 }
 
-formJogo.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    if (!formJogo.reportValidity()) {
-        return;
-    }
-
-    const jogo = {
-        titulo: document.getElementById("titulo").value.trim(),
-        plataforma: document.getElementById("plataforma").value.trim(),
-        desenvolvedora: document
-            .getElementById("desenvolvedora").value.trim(),
-        imagem_url: document.getElementById("imagem_url").value.trim(),
-        preco: Number(document.getElementById("preco").value)
-    };
-
-    
-    if (
-        !jogo.titulo ||
-        !jogo.plataforma ||
-        !jogo.desenvolvedora ||
-        !jogo.imagem_url ||
-        !Number.isFinite(jogo.preco) ||
-        jogo.preco <= 0
-    ) {
-        return;
-    }
-
-  
-    const card = criarCardJogo(jogo);
-    listarJogos.appendChild(card);
-
-  
-    mensagemVazia.hidden = true;
-
-    formJogo.reset();
-    modalCadastro.close();
-});
+// Inicializar página
+carregarJogos();
